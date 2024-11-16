@@ -7,10 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
-    use HasFactory;
+    protected $fillable = ['name', 'description', 'price', 'stock'];
 
-    protected $fillable = ['room_name', 'room_capacity', 'price'];
-
+    // Define the relationship to bookings
     public function bookings()
     {
         return $this->hasMany(Booking::class);

@@ -13,6 +13,7 @@ class CreateProductsTable extends Migration
             $table->id();
             $table->string('room_name');
             $table->integer('room_capacity');
+            $table->integer('stock')->default(0);
             $table->integer('price');
             $table->timestamps();
         });
