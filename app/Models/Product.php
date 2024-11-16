@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
-    protected $fillable = ['name', 'description', 'price', 'stock'];
+    protected $fillable = [ 'price', 'stock', 'room_name', 'room_capacity'];
 
     // Define the relationship to bookings
     public function bookings()

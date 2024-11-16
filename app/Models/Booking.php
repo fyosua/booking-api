@@ -34,6 +34,7 @@ class Booking extends Model
 
     protected $fillable = [
         'customer_name',
+        'customer_email',
         'start_booking_date',
         'end_booking_date',
         'product_id',
@@ -44,7 +45,7 @@ class Booking extends Model
     {
         return $this->belongsTo(Product::class);
     }
-    
+
     public function user()
     {
         return $this->belongsTo(User::class); 

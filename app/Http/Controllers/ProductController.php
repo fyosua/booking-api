@@ -25,6 +25,7 @@ class ProductController extends Controller
             'room_name' => 'required|string',
             'room_capacity' => 'required|string',
             'price' => 'required|integer',
+            'stock' => 'required|integer',
         ])->validate();
 
         $product = Product::create($validated);
@@ -48,6 +49,7 @@ class ProductController extends Controller
             'room_name' => 'string',
             'room_capacity' => 'string',
             'price' => 'integer',
+            'stock' => 'integer',
         ])->validate();
 
         $product = Product::findOrFail($id);
