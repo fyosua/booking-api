@@ -34,14 +34,17 @@ class Booking extends Model
 
     protected $fillable = [
         'customer_name',
-        'booking_date',
-        'room_number',
-        'user_id',
+        'start_booking_date',
+        'end_booking_date',
+        'product_id',
+        'user_id'
     ];
 
-    /**
-     * Define the relationship between booking and user
-     */
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+    
     public function user()
     {
         return $this->belongsTo(User::class); 

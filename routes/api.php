@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProductController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,4 +30,10 @@ Route::middleware('auth:api')->group(function () {
     Route::get('bookings/{id}', [BookingController::class, 'show']);
     Route::post('bookings/{id}/update', [BookingController::class, 'update']);
     Route::post('bookings/{id}/destroy', [BookingController::class, 'destroy']);
+
+    Route::get('products', [ProductController::class, 'index']);
+    Route::post('products', [ProductController::class, 'store']);
+    Route::get('products/{id}', [ProductController::class, 'show']);
+    Route::post('products/{id}/update', [ProductController::class, 'update']);
+    Route::post('products/{id}/destroy', [ProductController::class, 'destroy']);
 });
