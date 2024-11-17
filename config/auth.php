@@ -45,6 +45,10 @@ return [
             'driver' => 'jwt',
             'provider' => 'users',
         ],
+        'seller' => [
+            'driver' => 'jwt',
+            'provider' => 'sellers',
+        ],
     ],
 
 
@@ -71,7 +75,10 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
         ],
-
+        'sellers' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\SellerUser::class,
+        ],
         // 'users' => [
         //     'driver' => 'database',
         //     'table' => 'users',
@@ -101,6 +108,12 @@ return [
         'users' => [
             'provider' => 'users',
             'table' => 'password_reset_tokens',
+            'expire' => 60,
+            'throttle' => 60,
+        ],
+        'sellers' => [
+            'provider' => 'sellers',
+            'table' => 'seller_password_resets',
             'expire' => 60,
             'throttle' => 60,
         ],

@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\SellerAuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,9 +38,20 @@ Route::middleware('auth:api')->group(function () {
 
 //Product Related
 Route::get('products', [ProductController::class, 'index']);
-Route::middleware('auth:api')->group(function () {
+Route::get('products/{id}', [ProductController::class, 'show']);
+Route::middleware('seller')->group(function () {
     Route::post('products', [ProductController::class, 'store']);
-    Route::get('products/{id}', [ProductController::class, 'show']);
     Route::post('products/{id}/update', [ProductController::class, 'update']);
     Route::post('products/{id}/destroy', [ProductController::class, 'destroy']);
+});
+
+//Seller Related
+Route::prefix('seller')->group(function () {
+    Route::post('login', [SellerAuthController::class, 'login'])->name('login_seller');
+    Route::get('login', [SellerAuthController::class, 'login'])->name('login_seller'); //Added for escape error on logout without token
+    Route::post('register', [SellerAuthController::class, 'register']);
+    Route::middleware('seller')->group(function () {
+        Route::get('user', [SellerAuthController::class, 'user']);
+        Route::post('logout', [SellerAuthController::class, 'logout']);
+    });
 });
