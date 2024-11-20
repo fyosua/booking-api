@@ -15,6 +15,7 @@ class CreateProductsTable extends Migration
             $table->integer('room_capacity');
             $table->integer('stock')->default(0);
             $table->integer('price');
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }

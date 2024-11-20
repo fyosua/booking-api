@@ -22,7 +22,12 @@ class BookingController extends Controller
     // Show a specific booking for the logged-in user
     public function show($id)
     {
-        $booking = auth()->user()->bookings()->findOrFail($id);
+        $booking = auth()->user()->bookings()->find($id);
+        if (!$booking) {
+            return response()->json([
+                'error' => 'Booking not found.'
+            ], 404);
+        }
         return response()->json($booking);
     }
 
@@ -62,7 +67,13 @@ class BookingController extends Controller
 
         try {
             // Fetch product and check for availability
-            $product = Product::findOrFail($request->product_id);
+            $product = Product::find($request->product_id);
+            if (!$product) {
+                DB::rollBack();
+                return response()->json([
+                    'error' => 'Product not found.'
+                ], 404);
+            }
 
             if ($product->stock <= 0) {
                 DB::rollBack();
@@ -74,15 +85,13 @@ class BookingController extends Controller
                 ->where('user_id', $user && $user->id ? $user->id : auth()->id())
                 ->where(function ($query) use ($request) {
                     $query->whereBetween('start_booking_date', [$request->start_booking_date, $request->end_booking_date])
-                        ->orWhereBetween('end_booking_date', [$request->start_booking_date, $request->end_booking_date]);
-                })
-                ->orWhere(function ($query) use ($user, $request) {
-                    // Additional check to see if any booking within the same account has an `end_booking_date` less than the new `start_booking_date`
-                    $query->where('user_id', $user && $user->id ? $user->id : auth()->id())
-                        ->where('end_booking_date', '>=', $request->start_booking_date);
+                        ->orWhereBetween('end_booking_date', [$request->start_booking_date, $request->end_booking_date])
+                        ->orWhere(function ($query) use ($request) {
+                            $query->where('start_booking_date', '<=', $request->start_booking_date)
+                                    ->where('end_booking_date', '>=', $request->end_booking_date);
+                        });
                 })
                 ->exists();
-
 
             if ($existingBooking) {
                 DB::rollBack();
@@ -112,11 +121,15 @@ class BookingController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['error' => 'Something went wrong, please try again later.'], 500);
+            // Return the actual error message from the exception in the response
+            return response()->json([
+                'error' => 'Something went wrong, please try again later.',
+                'message' => $e->getMessage(),  // Return the exception message
+                'stack' => $e->getTraceAsString(), // Return the stack trace for debugging
+            ], 500);
         }
     }
 
-    // Update a booking
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
@@ -129,7 +142,13 @@ class BookingController extends Controller
         }
 
         // Fetch and check the booking
-        $booking = Booking::findOrFail($id);
+        $booking = Booking::find($id);
+
+        if (!$booking) {
+            return response()->json([
+                'error' => 'Booking not found.'
+            ], 404);
+        }
 
         // Ensure the user is trying to update their own booking
         if ($booking->user_id != auth()->id()) {
@@ -141,9 +160,16 @@ class BookingController extends Controller
 
         try {
             // Check if product availability and double booking logic
-            $product = Product::findOrFail($booking->product_id);
+            $product = Product::find($booking->product_id);
+            if (!$product) {
+                DB::rollBack();
+                return response()->json([
+                    'error' => 'Product not found.'
+                ], 404);
+            }
 
             if ($product->stock <= 0) {
+                DB::rollBack();
                 return response()->json(['error' => 'Product is out of stock.'], 400);
             }
 
@@ -152,16 +178,16 @@ class BookingController extends Controller
                 ->where('user_id', auth()->id())
                 ->where(function ($query) use ($request) {
                     $query->whereBetween('start_booking_date', [$request->start_booking_date, $request->end_booking_date])
-                        ->orWhereBetween('end_booking_date', [$request->start_booking_date, $request->end_booking_date]);
-                })
-                ->orWhere(function ($query) use ($user, $request) {
-                    // Additional check to see if any booking within the same account has an `end_booking_date` less than the new `start_booking_date`
-                    $query->where('user_id', auth()->id())
-                        ->where('end_booking_date', '>=', $request->start_booking_date);
+                        ->orWhereBetween('end_booking_date', [$request->start_booking_date, $request->end_booking_date])
+                        ->orWhere(function ($query) use ($request) {
+                            $query->where('start_booking_date', '<=', $request->start_booking_date)
+                                    ->where('end_booking_date', '>=', $request->end_booking_date);
+                        });
                 })
                 ->exists();
 
             if ($existingBooking) {
+                DB::rollBack();
                 return response()->json(['error' => 'Product is already booked for the selected date range.'], 400);
             }
 
@@ -186,14 +212,27 @@ class BookingController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['error' => 'Something went wrong, please try again later.'], 500);
+            // Return the actual error message from the exception in the response
+            return response()->json([
+                'error' => 'Something went wrong, please try again later.',
+                'message' => $e->getMessage(),  // Return the exception message
+                'stack' => $e->getTraceAsString(), // Return the stack trace for debugging
+            ], 500);
         }
     }
+
 
     // Delete a booking
     public function destroy($id)
     {
-        $booking = Booking::findOrFail($id);
+        $booking = Booking::find($id);
+
+            if (!$booking) {
+                DB::rollBack();
+                return response()->json([
+                    'error' => 'Booking not found.'
+                ], 404);
+            }
 
         // Ensure the user is trying to delete their own booking
         if ($booking->user_id != auth()->id()) {
